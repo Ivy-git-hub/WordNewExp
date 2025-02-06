@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉语新解</title>
+    <style>
+        body {
+            font-family: 'SimSun', serif;
+            background-color: #F5F1EA;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2C2C2C;
+            font-size: 2.5em;
+            margin-bottom: 1em;
+        }
+        .input-section {
+            margin: 2em 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        input[type="text"] {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            width: 300px;
+            border: 1px solid #2C2C2C;
+            border-radius: 4px;
+            background-color: white;
+        }
+        select {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border: 1px solid #2C2C2C;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+        }
+        button {
+            padding: 10px 30px;
+            font-size: 1.2em;
+            background-color: #2C2C2C;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #444444;
+        }
+        #result {
+            margin-top: 2em;
+            min-height: 400px;
+        }
+        .error {
+            color: #ff4444;
+            margin-top: 1em;
+        }
+        .loading {
+            display: none;
+            margin: 2em 0;
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>汉语新解</h1>
+        <div class="input-section">
+            <input type="text" id="word" placeholder="请输入想要解释的词语">
+            <select id="model">
+                <option value="default">默认模式</option>
+                <option value="openai">OpenAI</option>
+                <option value="zhipuai">智谱AI</option>
+                <option value="qwen">阿里千问</option>
+                <option value="gemini">Google Gemini</option>
+            </select>
+            <button onclick="interpretWord()">生成</button>
+        </div>
+        <div id="loading" class="loading">正在生成中，请稍候...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function interpretWord() {
+            const word = document.getElementById('word').value.trim();
+            const model = document.getElementById('model').value;
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            
+            if (!word) {
+                resultDiv.innerHTML = '<div class="error">请输入词语</div>';
+                return;
+            }
+            
+            try {
+                loadingDiv.style.display = 'block';
+                resultDiv.innerHTML = '';
+                
+                const response = await fetch('/interpret', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        word,
+                        model
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = data.svg;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">生成失败，请稍后重试</div>';
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+        
+        // 支持回车键提交
+        document.getElementById('word').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                interpretWord();
+            }
+        });
+    </script>
+</body>
+</html>
