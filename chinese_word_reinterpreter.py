@@ -94,72 +94,11 @@ class ChineseWordReinterpreter:
         return f"在这个荒诞的世界里，'{word}'不过是一个美丽的谎言，" \
                f"我们都在用它来粉饰太平，掩盖真相。"
 
-    def _create_svg_card(self, word: str, interpretation: str) -> str:
-        """Generate SVG card with interpretation"""
-        # 获取拼音和翻译
-        pinyin = self._get_pinyin(word)
-        en_trans, ja_trans = self._translate_word(word)
-        
-        # 创建SVG
-        dwg = svgwrite.Drawing(size=("800px", "400px"))
-        
-        # 设置样式
-        style = Style(
-            background_color="#F5F1EA",
-            text_color="#2C2C2C",
-            accent_color="#4A4A4A"
-        )
-        
-        # 背景
-        dwg.add(dwg.rect(insert=(0, 0), size=("100%", "100%"),
-                        fill=style.background_color))
-        
-        # 标题
-        dwg.add(dwg.text("汉语新解",
-                        insert=("50%", "50px"),
-                        text_anchor="middle",
-                        fill=style.accent_color,
-                        style="font-family: SimSun, serif; font-size: 24px;"))
-        
-        # 分隔线
-        dwg.add(dwg.line(start=("20%", "70px"), end=("80%", "70px"),
-                        stroke=style.accent_color,
-                        stroke_width=1))
-        
-        # 词语
-        dwg.add(dwg.text(word,
-                        insert=("50%", "120px"),
-                        text_anchor="middle",
-                        fill=style.text_color,
-                        style="font-family: SimSun, serif; font-size: 32px; font-weight: bold;"))
-        
-        # 拼音
-        dwg.add(dwg.text(pinyin,
-                        insert=("50%", "150px"),
-                        text_anchor="middle",
-                        fill=style.accent_color,
-                        style="font-family: SimSun, serif; font-size: 16px;"))
-        
-        # 翻译
-        dwg.add(dwg.text(en_trans,
-                        insert=("50%", "180px"),
-                        text_anchor="middle",
-                        fill=style.accent_color,
-                        style="font-family: SimSun, serif; font-size: 16px;"))
-        
-        dwg.add(dwg.text(ja_trans,
-                        insert=("50%", "210px"),
-                        text_anchor="middle",
-                        fill=style.accent_color,
-                        style="font-family: SimSun, serif; font-size: 16px;"))
-        
-        # 解释文本
-        # 将文本分成多行
-        max_chars_per_line = 25
+    def _wrap_text(self, text: str, max_chars_per_line: int) -> List[str]:
         lines = []
         current_line = ""
         
-        for char in interpretation:
+        for char in text:
             if len(current_line) >= max_chars_per_line and char in "，。！？":
                 lines.append(current_line + char)
                 current_line = ""
@@ -169,16 +108,33 @@ class ChineseWordReinterpreter:
         if current_line:
             lines.append(current_line)
             
-        # 添加解释文本
-        y_pos = 280
+        return lines
+        
+    def _create_svg_card(self, word: str, interpretation: str) -> str:
+        # 创建SVG画布
+        dwg = svgwrite.Drawing(size=('100%', '100%'), viewBox='0 0 800 400')
+        
+        # 设置背景
+        dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='#f5f5f5'))
+        
+        # 添加汉字
+        dwg.add(dwg.text(word, insert=(400, 120), font_size=80, font_family='Ma Shan Zheng', 
+                        text_anchor='middle', fill='#333333'))
+        
+        # 添加拼音
+        pinyin = self._get_pinyin(word)
+        dwg.add(dwg.text(pinyin, insert=(400, 180), font_size=24, font_family='Arial', 
+                        text_anchor='middle', fill='#666666'))
+        
+        # 添加解释文字（去掉双引号）
+        interpretation = interpretation.strip('"')  # 去掉可能存在的双引号
+        lines = self._wrap_text(interpretation, 20)  # 每行大约20个汉字
+        y = 250  # 起始y坐标
         for line in lines:
-            dwg.add(dwg.text(line,
-                            insert=("50%", f"{y_pos}px"),
-                            text_anchor="middle",
-                            fill=style.text_color,
-                            style="font-family: SimSun, serif; font-size: 18px;"))
-            y_pos += 30
-            
+            dwg.add(dwg.text(line, insert=(400, y), font_size=24, font_family='Noto Sans SC', 
+                            text_anchor='middle', fill='#444444'))
+            y += 40
+        
         return dwg.tostring()
         
     async def interpret(self, word: str, llm_adapter: Optional[LLMAdapter] = None) -> str:

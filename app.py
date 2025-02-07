@@ -23,14 +23,16 @@ async def index():
 async def interpret():
     data = await request.get_json()
     word = data.get('word', '')
-    model = data.get('model', 'default')
+    model = data.get('model', 'zhipuai')  # 默认使用智谱AI
     
     if not word:
         return jsonify({'error': '请输入词语'}), 400
     
     try:
         # 获取选择的LLM适配器
-        llm_adapter = None if model == 'default' else get_llm_adapter(model)
+        llm_adapter = get_llm_adapter(model)
+        if not llm_adapter:
+            return jsonify({'error': '不支持的模型类型'}), 400
         
         # 生成解释
         interpretation = await interpreter.interpret_word(word, llm_adapter)
