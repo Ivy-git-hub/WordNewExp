@@ -111,9 +111,9 @@ class ChineseWordReinterpreter:
         return lines
         
     def _create_svg_card(self, word: str, interpretation: str) -> str:
-        # 创建SVG画布，宽高比2:3，宽度增加10%
-        width = 165  # 150 * 1.1
-        height = 248  # 保持接近2:3的比例
+        # 创建SVG画布，固定尺寸 200x240
+        width = 200
+        height = 240
         dwg = svgwrite.Drawing(size=('100%', '100%'), viewBox=f'0 0 {width} {height}')
         
         # 设置背景为米色
