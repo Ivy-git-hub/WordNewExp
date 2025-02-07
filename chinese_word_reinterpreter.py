@@ -111,19 +111,19 @@ class ChineseWordReinterpreter:
         return lines
         
     def _create_svg_card(self, word: str, interpretation: str) -> str:
-        # 创建SVG画布
-        dwg = svgwrite.Drawing(size=('100%', '100%'), viewBox='0 0 800 400')
+        # 创建SVG画布，修改宽度为600px
+        dwg = svgwrite.Drawing(size=('100%', '100%'), viewBox='0 0 600 400')
         
         # 设置背景
         dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='#f5f5f5'))
         
         # 添加汉字
-        dwg.add(dwg.text(word, insert=(400, 120), font_size=80, font_family='Ma Shan Zheng', 
+        dwg.add(dwg.text(word, insert=(300, 120), font_size=80, font_family='Ma Shan Zheng', 
                         text_anchor='middle', fill='#333333'))
         
         # 添加拼音
         pinyin = self._get_pinyin(word)
-        dwg.add(dwg.text(pinyin, insert=(400, 180), font_size=24, font_family='Arial', 
+        dwg.add(dwg.text(pinyin, insert=(300, 180), font_size=24, font_family='Arial', 
                         text_anchor='middle', fill='#666666'))
         
         # 添加解释文字（去掉双引号）
@@ -131,7 +131,7 @@ class ChineseWordReinterpreter:
         lines = self._wrap_text(interpretation, 20)  # 每行大约20个汉字
         y = 250  # 起始y坐标
         for line in lines:
-            dwg.add(dwg.text(line, insert=(400, y), font_size=24, font_family='Noto Sans SC', 
+            dwg.add(dwg.text(line, insert=(300, y), font_size=24, font_family='Noto Sans SC', 
                             text_anchor='middle', fill='#444444'))
             y += 40
         
