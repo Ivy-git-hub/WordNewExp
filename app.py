@@ -12,6 +12,7 @@ os.environ['GEMINI_API_KEY'] = 'AIzaSyCsHiT4dkYnWwg0B8Lgdq8SguR0mze_UnQ'
 
 load_dotenv()
 
+# Vercel 处理函数
 app = Quart(__name__)
 interpreter = ChineseWordReinterpreter()
 
@@ -23,28 +24,18 @@ async def index():
 async def interpret():
     data = await request.get_json()
     word = data.get('word', '')
-    model = data.get('model', 'zhipuai')  # 默认使用智谱AI
-    
-    if not word:
-        return jsonify({'error': '请输入词语'}), 400
+    model = data.get('model', 'zhipuai')
     
     try:
-        # 获取选择的LLM适配器
-        llm_adapter = get_llm_adapter(model)
-        if not llm_adapter:
-            return jsonify({'error': '不支持的模型类型'}), 400
-        
-        # 生成解释
-        interpretation = await interpreter.interpret_word(word, llm_adapter)
-        
-        # 生成SVG
-        svg_content = interpreter._create_svg_card(word, interpretation)
-        
-        return jsonify({
-            'svg': svg_content
-        })
+        llm = get_llm_adapter(model)
+        interpretation = await interpreter.interpret_word(word, llm)
+        return jsonify({'svg': interpretation})
     except Exception as e:
-        return jsonify({'error': f'生成失败：{str(e)}'}), 500
+        return jsonify({'error': str(e)}), 500
+
+# Vercel 需要的入口函数
+def handler(request):
+    return app(request)
 
 if __name__ == '__main__':
-    asyncio.run(app.run(debug=True))
+    app.run(debug=True)
