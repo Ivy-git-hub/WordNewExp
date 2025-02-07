@@ -142,23 +142,42 @@
         
         function downloadSVG() {
             const svg = document.querySelector('svg');
+            const word = document.getElementById('word').value.trim();
             const serializer = new XMLSerializer();
             const svgStr = serializer.serializeToString(svg);
             
-            // 创建 Canvas
+            // 创建一个临时的 SVG 元素来获取原始尺寸
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = svgStr;
+            const tempSvg = tempDiv.firstChild;
+            const viewBox = tempSvg.getAttribute('viewBox').split(' ');
+            const originalWidth = parseFloat(viewBox[2]);
+            const originalHeight = parseFloat(viewBox[3]);
+            
+            // 设置放大倍数
+            const scale = 4;
+            
+            // 创建 Canvas，使用放大后的尺寸
             const canvas = document.createElement('canvas');
+            canvas.width = originalWidth * scale;
+            canvas.height = originalHeight * scale;
             const ctx = canvas.getContext('2d');
+            
+            // 创建新的图片对象
             const img = new Image();
             
             img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
+                // 设置背景色
+                ctx.fillStyle = '#FAF6F1';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制图片时进行缩放
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 
                 // 转换为 PNG 并下载
                 const link = document.createElement('a');
-                link.download = '汉语新解.png';
-                link.href = canvas.toDataURL('image/png');
+                link.download = `${word}-汉语新解.png`;
+                link.href = canvas.toDataURL('image/png', 1.0); // 使用最高质量
                 link.click();
             };
             
