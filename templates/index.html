@@ -147,6 +147,13 @@
             font-style: italic;
             color: #666;
             animation: pulse 1.5s infinite;
+            max-width: min(600px, 95%);
+            margin-left: auto;
+            margin-right: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         @keyframes pulse {
@@ -206,6 +213,7 @@
             if (!word) {
                 resultDiv.innerHTML = '<div class="error">请输入词语</div>';
                 resultSection.classList.add('visible');
+                loadingDiv.style.display = 'none';
                 return;
             }
             
@@ -213,7 +221,7 @@
                 loadingDiv.style.display = 'block';
                 resultDiv.innerHTML = '';
                 downloadBtn.style.display = 'none';
-                resultSection.classList.add('visible');
+                resultSection.classList.remove('visible');
                 
                 const response = await fetch('/interpret', {
                     method: 'POST',
@@ -231,11 +239,14 @@
                 if (response.ok) {
                     resultDiv.innerHTML = data.svg;
                     downloadBtn.style.display = 'block';
+                    resultSection.classList.add('visible');
                 } else {
                     resultDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                    resultSection.classList.add('visible');
                 }
             } catch (error) {
                 resultDiv.innerHTML = '<div class="error">生成失败，请稍后重试</div>';
+                resultSection.classList.add('visible');
             } finally {
                 loadingDiv.style.display = 'none';
             }
