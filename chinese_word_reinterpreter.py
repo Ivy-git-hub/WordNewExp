@@ -95,21 +95,32 @@ class ChineseWordReinterpreter:
                f"我们都在用它来粉饰太平，掩盖真相。"
 
     def _wrap_text(self, text: str, max_chars_per_line: int) -> List[str]:
+        """
+        将文本按照最大字符数换行，确保不会超出SVG范围
+        """
+        # 移除多余的空格
+        text = ' '.join(text.split())
+        
+        # 标点符号列表（在这些符号后优先换行）
+        punctuations = '。，；！？、'
+        
         lines = []
-        current_line = ""
+        current_line = ''
         
         for char in text:
-            if len(current_line) >= max_chars_per_line and char in "，。！？":
-                lines.append(current_line + char)
-                current_line = ""
-            else:
-                current_line += char
-                
+            current_line += char
+            
+            # 如果当前行达到最大长度或遇到标点符号
+            if len(current_line) >= max_chars_per_line or char in punctuations:
+                lines.append(current_line)
+                current_line = ''
+        
+        # 添加最后一行（如果有）
         if current_line:
             lines.append(current_line)
-            
-        return lines
         
+        return lines
+
     def _create_svg_card(self, word: str, interpretation: str) -> str:
         # 创建SVG画布，固定尺寸 200x240
         width = 200
@@ -138,20 +149,20 @@ class ChineseWordReinterpreter:
         
         # 添加解释文字
         interpretation = interpretation.strip('"')  # 去掉可能存在的双引号
-        lines = self._wrap_text(interpretation, 10)  # 减少每行字数，确保不超出范围
-        y = 120  # 起始y坐标
-        max_y = height - 20  # 留出底部空白
-        line_height = 14  # 行间距
         
-        # 计算文本总高度
-        total_text_height = len(lines) * line_height
-        if y + total_text_height > max_y:
-            # 如果文本会超出范围，调整行间距
-            available_height = max_y - y
-            line_height = available_height / len(lines)
+        # 计算每行最大字符数（根据字体大小和SVG宽度）
+        max_chars = int((width * 0.7) / 8)  # 8px 是字体大小，留出 30% 边距
+        lines = self._wrap_text(interpretation, max_chars)
         
-        for line in lines:
-            if y > max_y:  # 如果超出范围，停止添加文字
+        # 计算文本总高度和行间距
+        available_height = height - 110  # 110 是文本开始的y坐标
+        total_lines = len(lines)
+        line_height = min(16, available_height / (total_lines + 1))  # 确保至少留出一行的空间
+        
+        # 添加文字
+        y = 110
+        for i, line in enumerate(lines):
+            if y + line_height > height - 10:  # 留出底部 10px 的边距
                 break
             dwg.add(dwg.text(line, insert=(width/2, y), font_size=8, font_family='Noto Sans SC', 
                             text_anchor='middle', fill='#333333'))
