@@ -22,8 +22,15 @@
         
         h1 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-size: clamp(1.5rem, 4vw, 2.5rem);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
         }
         
         .input-section {
@@ -180,11 +187,27 @@
                 padding: 12px 16px;
             }
         }
+
+        .disclaimer {
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-width: min(600px, 95%);
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>汉语新解</h1>
+        <div class="subtitle">词语的B面故事：那些年我们误解的汉字</div>
         <div class="input-section">
             <input type="text" id="word" placeholder="输入词语">
             <select id="model">
@@ -220,6 +243,9 @@
             </div>
             <button id="downloadBtn" style="display: block; margin-top: 20px;" onclick="downloadSVG()">下载图片</button>
         </div>
+    </div>
+    <div class="disclaimer">
+        本内容由AI小助手熬夜爆肝创作🤖，如果出现奇怪脑回路或神奇错别字，纯属智能卖萌行为，本平台不背锅🐶！各位人类大大使用时可要像rua猫一样温柔哦~（温馨提示：人工智能尚未学会人类甩锅技能，请文明投喂数据🗣️）
     </div>
 
     <script>
