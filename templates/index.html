@@ -28,20 +28,23 @@
         
         .input-section {
             display: flex;
-            flex-wrap: wrap;
             gap: 10px;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            padding: 0 10px;
+            max-width: min(600px, 95%);
+            margin-left: auto;
+            margin-right: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
         input[type="text"] {
             padding: 12px;
             font-size: 16px;
-            flex: 1;
-            min-width: 200px;
-            max-width: 400px;
+            width: 250px;
             border: 1px solid #ddd;
             border-radius: 6px;
             transition: border-color 0.3s;
@@ -56,6 +59,7 @@
         select {
             padding: 12px;
             font-size: 16px;
+            width: 140px;
             border: 1px solid #ddd;
             border-radius: 6px;
             background-color: white;
@@ -78,6 +82,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            white-space: nowrap;
         }
         
         button:hover {
@@ -92,6 +97,7 @@
         }
         
         .result-section {
+            display: none;
             text-align: center;
             max-width: min(600px, 95%);
             margin: 0 auto;
@@ -99,6 +105,10 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .result-section.visible {
+            display: block;
         }
         
         #result {
@@ -147,17 +157,20 @@
 
         @media (max-width: 600px) {
             .input-section {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            input[type="text"], select, button {
-                width: 100%;
-                max-width: none;
-            }
-
-            .result-section {
+                gap: 8px;
                 padding: 15px;
+            }
+
+            input[type="text"] {
+                width: 160px;
+            }
+
+            select {
+                width: 110px;
+            }
+
+            button {
+                padding: 12px 16px;
             }
         }
     </style>
@@ -166,7 +179,7 @@
     <div class="container">
         <h1>汉语新解</h1>
         <div class="input-section">
-            <input type="text" id="word" placeholder="请输入想要解释的词语">
+            <input type="text" id="word" placeholder="输入词语">
             <select id="model">
                 <option value="zhipuai">智谱AI</option>
                 <option value="qwen">阿里千问</option>
@@ -188,9 +201,11 @@
             const resultDiv = document.getElementById('result');
             const downloadBtn = document.getElementById('downloadBtn');
             const loadingDiv = document.getElementById('loading');
+            const resultSection = document.querySelector('.result-section');
             
             if (!word) {
                 resultDiv.innerHTML = '<div class="error">请输入词语</div>';
+                resultSection.classList.add('visible');
                 return;
             }
             
@@ -198,6 +213,7 @@
                 loadingDiv.style.display = 'block';
                 resultDiv.innerHTML = '';
                 downloadBtn.style.display = 'none';
+                resultSection.classList.add('visible');
                 
                 const response = await fetch('/interpret', {
                     method: 'POST',
