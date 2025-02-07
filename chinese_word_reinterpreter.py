@@ -111,37 +111,51 @@ class ChineseWordReinterpreter:
         return lines
         
     def _create_svg_card(self, word: str, interpretation: str) -> str:
-        # 创建SVG画布，宽度改为原来的3/4
-        dwg = svgwrite.Drawing(size=('100%', '100%'), viewBox='0 0 225 267')
+        # 创建SVG画布，宽高比2:3，宽度增加10%
+        width = 165  # 150 * 1.1
+        height = 248  # 保持接近2:3的比例
+        dwg = svgwrite.Drawing(size=('100%', '100%'), viewBox=f'0 0 {width} {height}')
         
         # 设置背景为米色
         dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='#FAF6F1'))
         
         # 添加标题
-        dwg.add(dwg.text('汉语新解', insert=(112.5, 25), font_size=10, font_family='Noto Sans SC', 
+        dwg.add(dwg.text('汉语新解', insert=(width/2, 20), font_size=8, font_family='Noto Sans SC', 
                         text_anchor='middle', fill='#333333'))
         
         # 添加分隔线
-        dwg.add(dwg.line(start=(37.5, 35), end=(187.5, 35), 
+        dwg.add(dwg.line(start=(width*0.15, 28), end=(width*0.85, 28), 
                         stroke='#333333', stroke_width=0.5))
         
         # 添加汉字
-        dwg.add(dwg.text(word, insert=(112.5, 80), font_size=20, font_family='Noto Sans SC', 
+        dwg.add(dwg.text(word, insert=(width/2, 65), font_size=20, font_family='Noto Sans SC', 
                         text_anchor='middle', fill='#333333'))
         
         # 添加拼音
         pinyin = self._get_pinyin(word)
-        dwg.add(dwg.text(pinyin, insert=(112.5, 100), font_size=8, font_family='Noto Sans SC', 
+        dwg.add(dwg.text(pinyin, insert=(width/2, 85), font_size=8, font_family='Noto Sans SC', 
                         text_anchor='middle', fill='#666666'))
         
         # 添加解释文字
         interpretation = interpretation.strip('"')  # 去掉可能存在的双引号
-        lines = self._wrap_text(interpretation, 12)  # 每行约12个汉字，确保不会超出宽度
-        y = 140  # 起始y坐标
+        lines = self._wrap_text(interpretation, 10)  # 减少每行字数，确保不超出范围
+        y = 120  # 起始y坐标
+        max_y = height - 20  # 留出底部空白
+        line_height = 14  # 行间距
+        
+        # 计算文本总高度
+        total_text_height = len(lines) * line_height
+        if y + total_text_height > max_y:
+            # 如果文本会超出范围，调整行间距
+            available_height = max_y - y
+            line_height = available_height / len(lines)
+        
         for line in lines:
-            dwg.add(dwg.text(line, insert=(112.5, y), font_size=8, font_family='Noto Sans SC', 
+            if y > max_y:  # 如果超出范围，停止添加文字
+                break
+            dwg.add(dwg.text(line, insert=(width/2, y), font_size=8, font_family='Noto Sans SC', 
                             text_anchor='middle', fill='#333333'))
-            y += 16  # 减小行间距
+            y += line_height
         
         return dwg.tostring()
         
